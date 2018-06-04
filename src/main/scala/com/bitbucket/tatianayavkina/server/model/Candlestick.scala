@@ -1,5 +1,6 @@
 package com.bitbucket.tatianayavkina.server.model
 
+
 case class Candlestick(ticker: String,
                        timestamp: String,
                        open: Double,

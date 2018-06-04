@@ -7,13 +7,10 @@ import java.time.temporal.ChronoUnit.MINUTES
 import akka.actor.{Actor, ActorLogging, Props}
 import com.bitbucket.tatianayavkina.server.model.{Candlestick, UpstreamMessage}
 import com.bitbucket.tatianayavkina.server.service.Aggregator.{GetDataForLastMinute, GetDataForLastNMinutes}
-import com.typesafe.config.Config
 
 import scala.collection.immutable.{TreeMap}
 
-class Aggregator(appConfig: Config) extends Actor with ActorLogging {
-  private val keepDataMinutes = if (appConfig.hasPath("app.keep-data-minutes")) appConfig.getInt("app.keep-data-minutes") else 10
-
+class Aggregator(keepDataMinutes: Int = 10) extends Actor with ActorLogging {
   private var candlesticks = TreeMap[String, Map[String, Candlestick]]()
 
   override def receive: Receive = {
@@ -32,14 +29,15 @@ class Aggregator(appConfig: Config) extends Actor with ActorLogging {
 
     candlesticks += time -> (candles + (msg.ticker -> cs))
   }
-
+  // todo: bug, should return seq of candlestick
   private def getDataForLastNMinutes(n: Int) : Map[String, Candlestick] = {
     val currentMinute = ZonedDateTime.now().truncatedTo(MINUTES).format(ISO_INSTANT)
     (candlesticks - currentMinute)
       .takeRight(n)
       .values
-      .flatMap {forMinute => forMinute.values}
-      .map(t => t.ticker -> t) toMap
+      .flatMap(forMinute => forMinute.values)
+      .map(t => t.ticker -> t)
+      .toMap
   }
 }
 
@@ -47,5 +45,5 @@ object Aggregator {
   case object GetDataForLastNMinutes
   case object GetDataForLastMinute
 
-  def props(appConfig: Config): Props = Props(new Aggregator(appConfig))
+  def props(keepDataMinutes: Int): Props = Props(new Aggregator(keepDataMinutes))
 }

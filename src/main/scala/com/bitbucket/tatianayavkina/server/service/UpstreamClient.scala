@@ -5,25 +5,24 @@ import java.net.InetSocketAddress
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
-import com.typesafe.config.Config
+import com.bitbucket.tatianayavkina.config.ConnectionSettings
 
-class UpstreamClient(appConfig: Config, aggregator: ActorRef) extends Actor with ActorLogging {
+class UpstreamClient(upstream: ConnectionSettings, aggregator: ActorRef) extends Actor with ActorLogging {
   import context.system
 
-  val upstreamServerAddress = new InetSocketAddress(appConfig.getString("app.upstream.hostname"),
-                              appConfig.getInt("app.upstream.port"))
+  val upstreamServerAddress = new InetSocketAddress(upstream.hostname, upstream.port)
 
   IO(Tcp) ! Connect(upstreamServerAddress)
 
   def receive = {
     case CommandFailed(_: Connect) ⇒
       aggregator ! "connect failed"
-      context stop self
+      context.stop(self)
 
     case c @ Connected(remote, local) ⇒
       val connection = sender()
       connection ! Register(self)
-      context become {
+      context.become({
         case CommandFailed(w: Write) ⇒ // O/S buffer was full
           log.error("write failed")
         case Received(data) ⇒
@@ -32,12 +31,12 @@ class UpstreamClient(appConfig: Config, aggregator: ActorRef) extends Actor with
           connection ! Close
         case _: ConnectionClosed ⇒
           log.info("connection closed")
-          context stop self
-      }
+          context.stop(self)
+      })
   }
 }
 
 object UpstreamClient {
-  def props(appConfig: Config, aggregator: ActorRef) =
-    Props(new UpstreamClient(appConfig, aggregator))
+  def props(upstream: ConnectionSettings, aggregator: ActorRef) =
+    Props(new UpstreamClient(upstream, aggregator))
 }

@@ -21,13 +21,13 @@ class Client(appConfig: Config) extends Actor with ActorLogging{
     case Connected(remote, local) =>
       val connection = sender()
       connection ! Register(self)
-      context become {
+      context.become({
         case Received(data) =>
           log.info(data.decodeString(ByteString.UTF_8))
         case _: ConnectionClosed =>
           log.info("connection closed")
           context.system.terminate()
-      }
+      })
   }
 }
 

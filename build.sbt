@@ -17,7 +17,8 @@ lazy val root  = (project in file("."))
       logbackClassic,
       scalaLogging,
       akkaActor,
-      gson,
-      quartz
+      circe,
+      circeGeneric,
+      pureConfig
     )
   )
