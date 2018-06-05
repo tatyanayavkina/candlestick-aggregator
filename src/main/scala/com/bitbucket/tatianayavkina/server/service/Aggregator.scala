@@ -1,7 +1,6 @@
 package com.bitbucket.tatianayavkina.server.service
 
 import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter.ISO_INSTANT
 import java.time.temporal.ChronoUnit.MINUTES
 
 import akka.actor.{Actor, ActorLogging, Props}
@@ -11,7 +10,7 @@ import com.bitbucket.tatianayavkina.server.service.Aggregator.{GetDataForLastMin
 import scala.collection.immutable.TreeMap
 
 class Aggregator(keepDataMinutes: Int = 10) extends Actor with ActorLogging {
-  private var candlesticks = TreeMap[String, Map[Ticker, Candlestick]]()
+  private var candlesticks = TreeMap[Long, Map[Ticker, Candlestick]]()
 
   override def receive: Receive = {
     case msg: UpstreamMessage => processIncomingData(msg)
@@ -32,13 +31,14 @@ class Aggregator(keepDataMinutes: Int = 10) extends Actor with ActorLogging {
     candlesticks += time -> (candles + (ticker -> cs))
   }
 
-  private def getDataForLastNMinutes(n: Int) : Map[Ticker, Iterable[Candlestick]] = {
-    val currentMinute = ZonedDateTime.now().truncatedTo(MINUTES).format(ISO_INSTANT)
+  private def getDataForLastNMinutes(n: Int) : Map[Ticker, List[Candlestick]] = {
+    val currentMinute = ZonedDateTime.now().truncatedTo(MINUTES).toInstant.toEpochMilli
     (candlesticks - currentMinute)
       .takeRight(n)
       .values
       .flatMap(forMinute => forMinute.values)
       .groupBy(t => t.ticker)
+      .map(e => e._1 -> e._2.toList)
   }
 }
 

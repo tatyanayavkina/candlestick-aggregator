@@ -7,8 +7,6 @@ import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.util.{ByteString, Timeout}
 import akka.pattern.ask
-import io.circe.generic.auto._
-import io.circe.syntax._
 import com.bitbucket.tatianayavkina.config.ConnectionSettings
 import com.bitbucket.tatianayavkina.server.dto.CandlestickResponse
 import com.bitbucket.tatianayavkina.server.model.{Candlestick, Ticker}
@@ -40,20 +38,20 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
 
   private def handleNewConnection(connection: ActorRef): Unit = {
     log.info("New client connected. Requesting data for the last 10 minutes")
-    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, Iterable[Candlestick]]]
+    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, List[Candlestick]]]
     future.onComplete {
       case Success(data) =>
-        val jsonStr = CandlestickResponse(data).asJson.toString()
+        val jsonStr = CandlestickResponse.toJson(CandlestickResponse(data))
         self ! SendDataForLastNMinutes(connection, jsonStr)
       case Failure(e) => log.error(s"Fail to get data for 1 minute: ${e.getMessage}")
     }
   }
 
   private def requestDataForLastMinute(): Unit = {
-    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, Iterable[Candlestick]]]
+    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, List[Candlestick]]]
     future.onComplete {
       case Success(data) =>
-        val jsonStr = CandlestickResponse(data).asJson.toString()
+        val jsonStr = CandlestickResponse.toJson(CandlestickResponse(data))
         self ! SendDataForLastMinute(jsonStr)
       case Failure(e) => log.error(s"Fail to get data for 10 minutes: ${e.getMessage}")
     }

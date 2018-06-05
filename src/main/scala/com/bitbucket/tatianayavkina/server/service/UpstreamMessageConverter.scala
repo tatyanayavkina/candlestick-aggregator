@@ -21,8 +21,10 @@ object UpstreamMessageConverter {
     UpstreamMessage(timestamp, ticker, price, size)
   }
 
-  private def parseTimestamp(timestamp: Long): String = ZonedDateTime.ofInstant(
+  private def parseTimestamp(timestamp: Long): Long = ZonedDateTime.ofInstant(
     Instant.ofEpochMilli(timestamp),
-    ZoneId.systemDefault()
-  ).truncatedTo(MINUTES).format(ISO_INSTANT)
+    ZoneId.systemDefault())
+    .truncatedTo(MINUTES)
+    .toInstant
+    .toEpochMilli
 }

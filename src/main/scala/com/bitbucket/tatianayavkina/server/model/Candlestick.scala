@@ -2,7 +2,7 @@ package com.bitbucket.tatianayavkina.server.model
 
 
 case class Candlestick(ticker: Ticker,
-                       timestamp: String,
+                       timestamp: Long,
                        open: Double,
                        high: Double,
                        low: Double,
