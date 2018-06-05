@@ -1,7 +1,7 @@
 package com.bitbucket.tatianayavkina.server.model
 
 
-case class Candlestick(ticker: String,
+case class Candlestick(ticker: Ticker,
                        timestamp: String,
                        open: Double,
                        high: Double,
@@ -10,7 +10,7 @@ case class Candlestick(ticker: String,
                        volume: Long) {
 
   def mergeWith(incoming: UpstreamMessage) : Candlestick = {
-    require(ticker == incoming.ticker)
+    require(ticker.symbol == incoming.ticker)
     require(timestamp == incoming.ts)
 
     copy(high = math.max(high, incoming.price),

@@ -2,16 +2,16 @@ package com.bitbucket.tatianayavkina.client
 
 import java.net.InetSocketAddress
 
-import akka.actor.{Actor, ActorLogging, ActorRef, Props}
+import akka.actor.{Actor, ActorLogging, Props}
 import akka.io.Tcp._
 import akka.io.{IO, Tcp}
 import akka.util.ByteString
-import com.typesafe.config.Config
+import com.bitbucket.tatianayavkina.config.ConnectionSettings
 
-class Client(appConfig: Config) extends Actor with ActorLogging{
+class Client(server: ConnectionSettings) extends Actor with ActorLogging{
   import context.system
 
-  val serverAddress = new InetSocketAddress(appConfig.getString("app.server.host"), appConfig.getInt("app.server.port"))
+  val serverAddress = new InetSocketAddress(server.hostname, server.port)
   IO(Tcp) ! Connect(serverAddress)
 
   override def receive: Receive = {
@@ -33,5 +33,5 @@ class Client(appConfig: Config) extends Actor with ActorLogging{
 
 object Client {
 
-  def props(appConfig: Config) = Props(new Client(appConfig))
+  def props(server: ConnectionSettings) = Props(new Client(server))
 }

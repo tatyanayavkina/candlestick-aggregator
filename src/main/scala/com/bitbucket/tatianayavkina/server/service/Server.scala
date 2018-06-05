@@ -11,15 +11,16 @@ import io.circe.generic.auto._
 import io.circe.syntax._
 import com.bitbucket.tatianayavkina.config.ConnectionSettings
 import com.bitbucket.tatianayavkina.server.dto.CandlestickResponse
-import com.bitbucket.tatianayavkina.server.model.Candlestick
+import com.bitbucket.tatianayavkina.server.model.{Candlestick, Ticker}
 import com.bitbucket.tatianayavkina.server.service.Aggregator.{GetDataForLastMinute, GetDataForLastNMinutes}
-import com.bitbucket.tatianayavkina.server.service.Server.SendDataForLastMinute
+import com.bitbucket.tatianayavkina.server.service.Server.{RequestDataForLastMinute, SendDataForLastMinute, SendDataForLastNMinutes}
 
 import scala.concurrent.duration._
-import scala.concurrent.Await
+import scala.util.{Failure, Success}
 
 class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor with ActorLogging {
   import context.system
+  import context.dispatcher
 
   implicit val timeout = Timeout(1.minutes)
   var clients = Set[ActorRef]()
@@ -31,24 +32,42 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
       log.error("CommandFailed")
       context.stop(self)
     case _ @ Connected(_, _) => handleNewConnection(sender())
-    case SendDataForLastMinute => sendDataForLastMinute()
+    case RequestDataForLastMinute => requestDataForLastMinute()
+    case SendDataForLastMinute(data) => sendDataForLastMinute(data)
+    case SendDataForLastNMinutes(connection, data) => sendDataForLastNMinutes(connection, data)
     case _: ConnectionClosed => handleClientDisconnected(sender())
   }
 
   private def handleNewConnection(connection: ActorRef): Unit = {
-    connection ! Register(self)
-    clients += connection
-    log.info("New client connected. Sending data for the last 10 minutes")
-    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[String, Candlestick]]
-    val data = Await.result(future, timeout.duration)
-    connection ! Write(ByteString(CandlestickResponse(data).asJson.toString()))
+    log.info("New client connected. Requesting data for the last 10 minutes")
+    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, Iterable[Candlestick]]]
+    future.onComplete {
+      case Success(data) =>
+        val jsonStr = CandlestickResponse(data).asJson.toString()
+        self ! SendDataForLastNMinutes(connection, jsonStr)
+      case Failure(e) => log.error(s"Fail to get data for 1 minute: ${e.getMessage}")
+    }
   }
 
-  private def sendDataForLastMinute(): Unit = {
-    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[String, Candlestick]]
-    val data = Await.result(future, timeout.duration)
-    val jsonStr = CandlestickResponse(data).asJson.toString()
-    for (c <- clients) c ! Write(ByteString(jsonStr))
+  private def requestDataForLastMinute(): Unit = {
+    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, Iterable[Candlestick]]]
+    future.onComplete {
+      case Success(data) =>
+        val jsonStr = CandlestickResponse(data).asJson.toString()
+        self ! SendDataForLastMinute(jsonStr)
+      case Failure(e) => log.error(s"Fail to get data for 10 minutes: ${e.getMessage}")
+    }
+  }
+
+  private def sendDataForLastMinute(data: String): Unit = {
+    for (c <- clients) c ! Write(ByteString(data))
+  }
+
+  private def sendDataForLastNMinutes(connection: ActorRef, data: String): Unit = {
+    log.info(s"Send data for the last 10 minutes to ${connection.path}")
+    connection ! Register(self)
+    clients += connection
+    connection ! Write(ByteString(data))
   }
 
   private def handleClientDisconnected(connection: ActorRef): Unit = {
@@ -58,7 +77,9 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
 }
 
 object Server {
-  case object SendDataForLastMinute
+  case object RequestDataForLastMinute
+  case class SendDataForLastMinute(data: String)
+  case class SendDataForLastNMinutes(connection:ActorRef, data: String)
 
   def props(server: ConnectionSettings, aggregator: ActorRef) = Props(new Server(server, aggregator))
 }
