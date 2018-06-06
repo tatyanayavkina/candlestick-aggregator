@@ -38,20 +38,20 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
 
   private def handleNewConnection(connection: ActorRef): Unit = {
     log.info("New client connected. Requesting data for the last 10 minutes")
-    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, List[Candlestick]]]
+    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, Iterable[Candlestick]]]
     future.onComplete {
       case Success(data) =>
-        val jsonStr = CandlestickResponse.toJson(CandlestickResponse(data))
+        val jsonStr = CandlestickResponse(data).toJson
         self ! SendDataForLastNMinutes(connection, jsonStr)
       case Failure(e) => log.error(s"Fail to get data for 1 minute: ${e.getMessage}")
     }
   }
 
   private def requestDataForLastMinute(): Unit = {
-    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, List[Candlestick]]]
+    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, Iterable[Candlestick]]]
     future.onComplete {
       case Success(data) =>
-        val jsonStr = CandlestickResponse.toJson(CandlestickResponse(data))
+        val jsonStr = CandlestickResponse(data).toJson
         self ! SendDataForLastMinute(jsonStr)
       case Failure(e) => log.error(s"Fail to get data for 10 minutes: ${e.getMessage}")
     }

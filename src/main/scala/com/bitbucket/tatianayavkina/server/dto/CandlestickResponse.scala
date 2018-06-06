@@ -4,9 +4,15 @@ import com.bitbucket.tatianayavkina.server.model.{Candlestick, Ticker}
 import io.circe.generic.auto._
 import io.circe.syntax._
 
-case class CandlestickResponse(value: Map[Ticker, List[Candlestick]])
+case class CandlestickResponse(value: Seq[(Ticker, Iterable[Candlestick])])
 
 object CandlestickResponse {
 
-  def toJson(target: CandlestickResponse): String = target.asJson.toString()
+  implicit class CandlestickResponseExt(response: CandlestickResponse) {
+    def toJson: String = response.asJson.toString()
+  }
+
+  def apply(source: Map[Ticker, Iterable[Candlestick]]): CandlestickResponse = CandlestickResponse(
+    source.map { case (ticker, canclesticks) => (ticker, canclesticks) }
+  )
 }

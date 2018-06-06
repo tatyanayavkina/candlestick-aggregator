@@ -31,14 +31,13 @@ class Aggregator(keepDataMinutes: Int = 10) extends Actor with ActorLogging {
     candlesticks += time -> (candles + (ticker -> cs))
   }
 
-  private def getDataForLastNMinutes(n: Int) : Map[Ticker, List[Candlestick]] = {
+  private def getDataForLastNMinutes(n: Int) : Map[Ticker, Iterable[Candlestick]] = {
     val currentMinute = ZonedDateTime.now().truncatedTo(MINUTES).toInstant.toEpochMilli
     (candlesticks - currentMinute)
       .takeRight(n)
       .values
       .flatMap(forMinute => forMinute.values)
       .groupBy(t => t.ticker)
-      .map(e => e._1 -> e._2.toList)
   }
 }
 
