@@ -20,6 +20,7 @@ lazy val root  = (project in file("."))
       akkaActor,
       circe,
       circeGeneric,
-      pureConfig
+      pureConfig,
+      scalaTest
     )
   )

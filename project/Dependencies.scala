@@ -8,6 +8,7 @@ object Dependencies {
   lazy val commonsCollectionsVersion = "4.1"
   lazy val circeVersion = "0.10.0-M1"
   lazy val pureConfigVersion = "0.9.1"
+  lazy val scalaTestVersion = "3.0.5"
 
   // Libraries
   val logbackClassic = "ch.qos.logback" %% "logback-classic" % logbackVersion
@@ -16,4 +17,5 @@ object Dependencies {
   val circe = "io.circe" %% "circe-core" % circeVersion
   val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   val pureConfig = "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
+  val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
 }

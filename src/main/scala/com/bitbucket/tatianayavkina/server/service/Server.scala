@@ -58,7 +58,7 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
   }
 
   private def sendDataForLastMinute(data: String): Unit = {
-    for (c <- clients) c ! Write(ByteString(data))
+    clients.foreach(c => c ! Write(ByteString(data)))
   }
 
   private def sendDataForLastNMinutes(connection: ActorRef, data: String): Unit = {
