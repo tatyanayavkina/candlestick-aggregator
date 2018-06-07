@@ -17,5 +17,6 @@ object Dependencies {
   val circe = "io.circe" %% "circe-core" % circeVersion
   val circeGeneric = "io.circe" %% "circe-generic" % circeVersion
   val pureConfig = "com.github.pureconfig" %% "pureconfig" % pureConfigVersion
-  val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % "test"
+  val scalaTest = "org.scalatest" %% "scalatest" % scalaTestVersion % Test
+  val akkaTest = "com.typesafe.akka" %% "akka-testkit" % akkaVersion % Test
 }
