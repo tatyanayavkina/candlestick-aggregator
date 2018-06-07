@@ -1,6 +1,5 @@
 package com.bitbucket.tatianayavkina.server.service
 
-import java.time.format.DateTimeFormatter.ISO_INSTANT
 import java.time.temporal.ChronoUnit.MINUTES
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
