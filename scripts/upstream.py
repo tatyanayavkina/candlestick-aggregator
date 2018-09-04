@@ -37,7 +37,7 @@ def emit_trades(client_socket, addr):
 def main():
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    server.bind(("127.0.0.1", PORT))
+    server.bind(("0.0.0.0", PORT))
     server.listen(5)
     print("Waiting for connections on port %d" % PORT)
     while True:
