@@ -11,7 +11,7 @@ object Dependencies {
   lazy val scalaTestVersion = "3.0.5"
 
   // Libraries
-  val logbackClassic = "ch.qos.logback" %% "logback-classic" % logbackVersion
+  val logbackClassic = "ch.qos.logback" % "logback-classic" % logbackVersion
   val scalaLogging = "com.typesafe.scala-logging" %% "scala-logging" % scalaLoggingVersion
   val akkaActor = "com.typesafe.akka" %% "akka-actor" % akkaVersion
   val circe = "io.circe" %% "circe-core" % circeVersion
