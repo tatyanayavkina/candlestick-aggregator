@@ -15,6 +15,7 @@ lazy val root  = project
 lazy val client = project
   .settings(
     name := "client",
+    mainClass in Compile := Some(" com.github.tatyanayavkina.client.ClientApp")
   )
   .settings(
     libraryDependencies ++= commonDependencies
@@ -22,7 +23,8 @@ lazy val client = project
 
 lazy val server = project
   .settings(
-    name:= "server"
+    name:= "server",
+    mainClass in Compile := Some(" com.github.tatyanayavkina.server.ServerApp")
   )
   .settings(
     libraryDependencies ++= commonDependencies ++ serverDependencies
@@ -41,4 +43,3 @@ lazy val serverDependencies = Seq(
   scalaTest,
   akkaTest
 )
-
