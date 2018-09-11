@@ -1,11 +1,11 @@
-package com.bitbucket.tatianayavkina
+package com.github.tatyanayavkina.server
 
 import java.time.ZonedDateTime
 
 import akka.actor.ActorSystem
 import akka.pattern.ask
 import akka.testkit.{DefaultTimeout, ImplicitSender, TestActorRef, TestKit}
-import com.github.tatyanayavkina.server.model.{Candlestick, Ticker, UpstreamMessage}
+import com.github.tatyanayavkina.server.model.{Candlestick, UpstreamMessage}
 import com.github.tatyanayavkina.server.service.Aggregator
 import com.github.tatyanayavkina.server.service.Aggregator.{GetDataForLastMinute, GetDataForLastNMinutes}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
@@ -33,12 +33,12 @@ class AggregatorSpec() extends TestKit(ActorSystem("MySpec"))
         val timeNow = ZonedDateTime.now()
         createMessages(timeNow).foreach(aggregator ! _)
 
-        val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, Iterable[Candlestick]]]
+        val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[String, Iterable[Candlestick]]]
         val candlesticks = Await.result(future, 500.millis)
 
         candlesticks.size should be (2)
-        candlesticks(Ticker("AAPL")).size should be(2)
-        candlesticks(Ticker("MSFT")).size should be(1)
+        candlesticks("AAPL").size should be(2)
+        candlesticks("MSFT").size should be(1)
       }
     }
 
@@ -49,11 +49,11 @@ class AggregatorSpec() extends TestKit(ActorSystem("MySpec"))
         val message = UpstreamMessage(timeMinusMinutesAsLong(timeNow, 1L), "AAPL", 101.1, 200)
         aggregator ! message
 
-        val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, Iterable[Candlestick]]]
+        val future = (aggregator ? GetDataForLastMinute).mapTo[Map[String, Iterable[Candlestick]]]
         val candlesticks = Await.result(future, 500.millis)
 
         candlesticks.size should be (1)
-        candlesticks(Ticker("AAPL")).size should be(1)
+        candlesticks("AAPL").size should be(1)
       }
     }
   }

@@ -2,7 +2,7 @@ import Dependencies._
 
 version := "0.1.0-SNAPSHOT"
 name := "candlestick-aggregator"
-organization := "com.bitbucket.tatianayavkina"
+organization := "com.github.tatyanayavkina"
 scalaVersion := "2.12.6"
 
 lazy val root  = project

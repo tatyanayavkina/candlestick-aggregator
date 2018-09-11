@@ -1,6 +1,6 @@
-package com.bitbucket.tatianayavkina
+package com.github.tatyanayavkina.server
 
-import com.github.tatyanayavkina.server.model.{Candlestick, Ticker, UpstreamMessage}
+import com.github.tatyanayavkina.server.model.{Candlestick, UpstreamMessage}
 import org.scalatest.{FlatSpec, Matchers}
 
 class CandlestickMergeSpec extends FlatSpec with Matchers {
@@ -8,7 +8,7 @@ class CandlestickMergeSpec extends FlatSpec with Matchers {
   val tickerValue = "AAPL"
   val timestamp = 12345L
 
-  val candlestick = Candlestick(Ticker(tickerValue), timestamp = timestamp,
+  val candlestick = Candlestick(tickerValue, timestamp = timestamp,
     open = 2.0, high = 4.0, low = 2.0, close = 3.5,
     volume = 1000L)
 
@@ -33,7 +33,7 @@ class CandlestickMergeSpec extends FlatSpec with Matchers {
 
     val result = candlestick.mergeWith(upstreamMessage)
 
-    result.ticker should be (Ticker(tickerValue))
+    result.ticker should be (tickerValue)
     result.timestamp should be (candlestick.timestamp)
     result.open should be (candlestick.open)
     result.high should be (candlestick.high)

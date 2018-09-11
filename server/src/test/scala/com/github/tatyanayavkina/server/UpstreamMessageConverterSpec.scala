@@ -1,4 +1,4 @@
-package com.bitbucket.tatianayavkina
+package com.github.tatyanayavkina.server
 
 import java.nio.ByteBuffer
 

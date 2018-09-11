@@ -9,7 +9,7 @@ import akka.util.{ByteString, Timeout}
 import akka.pattern.ask
 import com.github.tatyanayavkina.server.ConnectionSettings
 import com.github.tatyanayavkina.server.dto.CandlestickResponse
-import com.github.tatyanayavkina.server.model.{Candlestick, Ticker}
+import com.github.tatyanayavkina.server.model.Candlestick
 import com.github.tatyanayavkina.server.service.Aggregator.{GetDataForLastMinute, GetDataForLastNMinutes}
 import com.github.tatyanayavkina.server.service.Server.{RequestDataForLastMinute, SendDataForLastMinute, SendDataForLastNMinutes}
 
@@ -38,7 +38,8 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
 
   private def handleNewConnection(connection: ActorRef): Unit = {
     log.info("New client connected. Requesting data for the last 10 minutes")
-    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[Ticker, Iterable[Candlestick]]]
+    connection ! Register(self)
+    val future = (aggregator ? GetDataForLastNMinutes).mapTo[Map[String, Iterable[Candlestick]]]
     future.onComplete {
       case Success(data) =>
         val jsonStr = CandlestickResponse(data).toJson
@@ -48,7 +49,7 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
   }
 
   private def requestDataForLastMinute(): Unit = {
-    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[Ticker, Iterable[Candlestick]]]
+    val future = (aggregator ? GetDataForLastMinute).mapTo[Map[String, Iterable[Candlestick]]]
     future.onComplete {
       case Success(data) =>
         val jsonStr = CandlestickResponse(data).toJson
@@ -63,7 +64,6 @@ class Server(server: ConnectionSettings, aggregator: ActorRef) extends Actor wit
 
   private def sendDataForLastNMinutes(connection: ActorRef, data: String): Unit = {
     log.info(s"Send data for the last 10 minutes to ${connection.path}")
-    connection ! Register(self)
     clients += connection
     connection ! Write(ByteString(data))
   }
