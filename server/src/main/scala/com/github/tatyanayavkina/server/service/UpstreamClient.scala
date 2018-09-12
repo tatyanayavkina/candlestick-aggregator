@@ -8,7 +8,7 @@ import com.github.tatyanayavkina.server.ConnectionSettings
 import com.github.tatyanayavkina.server.service.UpstreamClientConnector.Reconnect
 
 class UpstreamClient(upstream: ConnectionSettings, aggregator: ActorRef) extends Actor with ActorLogging {
-
+  log.info(s"upstream connection settings are $upstream")
   private val connector = context.actorOf(UpstreamClientConnector.props(new InetSocketAddress(upstream.hostname, upstream.port)), "connector")
   context.watch(connector)
 
