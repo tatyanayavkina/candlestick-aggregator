@@ -4,4 +4,6 @@ WORKDIR /app
 
 ADD /target/scala-2.12/client-assembly**.jar /app/client.jar
 
-CMD ["/usr/bin/java", "-jar", "client.jar"]
+ADD application.conf /app/application.conf
+
+CMD ["/usr/bin/java", "-Dconfig.file=application.conf", "-jar", "client.jar"]

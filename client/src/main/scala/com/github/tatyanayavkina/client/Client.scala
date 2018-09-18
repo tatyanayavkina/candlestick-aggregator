@@ -11,6 +11,7 @@ class Client(server: AppConfig) extends Actor with ActorLogging{
   import context.system
 
   val serverAddress = new InetSocketAddress(server.hostname, server.port)
+  log.info(s"client try to connect to $server")
   IO(Tcp) ! Connect(serverAddress)
 
   override def receive: Receive = {
