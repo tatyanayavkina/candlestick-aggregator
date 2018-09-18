@@ -1,6 +1,6 @@
 import Dependencies._
 
-version := "0.1.0-SNAPSHOT"
+version := "0.1.0"
 name := "candlestick-aggregator"
 organization := "com.github.tatyanayavkina"
 scalaVersion := "2.12.6"

@@ -1,0 +1,19 @@
+version: "3"
+services:
+  ups:
+    image: tatyanayavkina/candlestick-upstream:0.1.0
+    container_name: ups
+    ports:
+      - 5555:5555
+  server:
+    image: tatyanayavkina/candlestick-server:0.1.0
+    container_name: server
+    depends_on:
+      - ups
+    ports:
+      - 5558:5558
+  client:
+    image: tatyanayavkina/candlestick-client:0.1.0
+    container_name: client
+    depends_on:
+      - server

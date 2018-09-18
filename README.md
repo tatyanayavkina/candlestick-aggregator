@@ -12,3 +12,10 @@ previous minutes. After that server pushes new data to client every minute.
 - run upstream.py `python upstream.py`
 - run server `sbt "runMain server.ServerApp"`
 - run clients `sbt "runMain client.ClientApp"`
+
+## Run and stop with docker-compose
+```
+docker-compose up
+
+docker-compose down -v
+```
